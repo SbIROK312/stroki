@@ -1,0 +1,1855 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>str() — Строковые данные | Python</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Fira+Code:wght@400;500;600&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <style>
+/* ═══════════════════════════════════════════════
+   ПАЛИТРА — тёплый янтарь + чернила + слоновая кость
+═══════════════════════════════════════════════ */
+:root {
+  --paper:   #f5f0e8;
+  --paper2:  #ede7d7;
+  --paper3:  #e2dac8;
+  --ink:     #1c1812;
+  --ink2:    #4a4232;
+  --ink3:    #8a7a62;
+  --amber:   #d97706;
+  --amber2:  #b45309;
+  --rust:    #c2410c;
+  --sage:    #3d6b4f;
+  --cobalt:  #1d4ed8;
+  --code-bg: #1c1a14;
+  --code-tx: #e8dfc8;
+  --border:  rgba(100,80,40,.18);
+  --shadow:  0 2px 16px rgba(80,50,10,.12);
+  --radius:  6px;
+  --trans:   .22s ease;
+  --glow:    0 0 16px rgba(217,119,6,.12);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Lora', Georgia, serif;
+  background: var(--paper);
+  color: var(--ink);
+  line-height: 1.7;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* ═══════ LAYOUT ═══════ */
+.app {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  grid-template-rows: auto 1fr;
+  min-height: 100vh;
+}
+.topbar {
+  grid-column: 1 / -1;
+  background: var(--ink);
+  color: var(--paper);
+  display: flex;
+  align-items: center;
+  gap: 1.4rem;
+  padding: .6rem 1.6rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-bottom: 3px solid var(--amber);
+}
+.topbar-logo {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: .04em;
+  color: var(--paper);
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  white-space: nowrap;
+}
+.topbar-logo span { color: var(--amber); }
+.topbar-tag {
+  font-family: 'Fira Code', monospace;
+  font-size: .72rem;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.15);
+  padding: 3px 10px;
+  border-radius: 3px;
+  color: var(--paper);
+  opacity: .75;
+  white-space: nowrap;
+}
+.topbar-progress {
+  flex: 1;
+  height: 3px;
+  background: rgba(255,255,255,.12);
+  border-radius: 2px;
+  overflow: hidden;
+  min-width: 60px;
+}
+.topbar-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--amber), var(--rust));
+  width: 0;
+  transition: width .15s;
+  border-radius: 2px;
+}
+.topbar-theme {
+  background: none;
+  border: 1px solid rgba(255,255,255,.2);
+  color: var(--paper);
+  width: 32px; height: 32px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: .95rem;
+  display: flex; align-items: center; justify-content: center;
+  transition: background var(--trans);
+  flex-shrink: 0;
+}
+.topbar-theme:hover { background: rgba(255,255,255,.1); }
+
+/* ═══════ SIDEBAR ═══════ */
+.sidebar {
+  background: var(--paper2);
+  border-right: 1px solid var(--border);
+  padding: 1.6rem 0;
+  position: sticky;
+  top: 49px;
+  height: calc(100vh - 49px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.sidebar-section-label {
+  font-family: 'Syne', sans-serif;
+  font-size: .62rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--ink3);
+  padding: 0 1.4rem .4rem;
+  margin-top: .8rem;
+}
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  padding: .55rem 1.4rem;
+  font-family: 'Syne', sans-serif;
+  font-size: .82rem;
+  font-weight: 600;
+  color: var(--ink2);
+  cursor: pointer;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  text-decoration: none;
+  transition: all var(--trans);
+  border-left: 3px solid transparent;
+  line-height: 1.3;
+}
+.sidebar-link:hover { background: var(--paper3); color: var(--ink); }
+.sidebar-link.active {
+  background: var(--paper);
+  color: var(--amber2);
+  border-left-color: var(--amber);
+  font-weight: 700;
+}
+.sidebar-divider { height: 1px; background: var(--border); margin: .8rem 1.4rem; }
+
+.content { overflow: hidden; }
+section { display: block; }
+
+.page {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 2.4rem 2rem 3rem;
+  border-bottom: 1px solid var(--border);
+}
+.page:last-of-type { border-bottom: none; }
+
+/* ═══════ PAGE HEADER ═══════ */
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.2rem;
+  margin-bottom: 2.2rem;
+  padding-bottom: 1.4rem;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+.page-header::after {
+  content: '';
+  position: absolute;
+  bottom: -1px; left: 0;
+  width: 60px; height: 2px;
+  background: linear-gradient(90deg, var(--amber), transparent);
+  border-radius: 2px;
+}
+.page-num {
+  font-family: 'Syne', sans-serif;
+  font-size: 3.5rem;
+  font-weight: 800;
+  color: var(--paper3);
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: -.2rem;
+  user-select: none;
+}
+.page-header-text {}
+.page-label {
+  font-family: 'Fira Code', monospace;
+  font-size: .68rem;
+  background: var(--amber);
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 2px;
+  display: inline-block;
+  margin-bottom: .5rem;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+.page-title {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--ink);
+}
+.page-desc {
+  margin-top: .4rem;
+  color: var(--ink3);
+  font-size: .92rem;
+  font-style: italic;
+}
+
+/* ═══════ CARDS ═══════ */
+.card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.4rem 1.5rem;
+  margin-bottom: 1.2rem;
+  box-shadow: var(--shadow);
+  position: relative;
+  transition: border-color var(--trans);
+}
+.card:hover {
+  border-color: rgba(180,83,9,.22);
+}
+.card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 4px;
+  border-radius: var(--radius) 0 0 var(--radius);
+  background: var(--amber);
+  opacity: 0;
+  transition: opacity var(--trans);
+}
+.card:hover::before { opacity: 1; }
+.card-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: .8rem;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+.card p { color: var(--ink2); font-size: .92rem; margin-bottom: .6rem; }
+.card p:last-child { margin-bottom: 0; }
+
+/* ═══════ CODE ═══════ */
+.codeblock {
+  background: var(--code-bg);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin: .8rem 0;
+  border: 1px solid rgba(255,255,255,.06);
+}
+.codeblock-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 14px;
+  background: rgba(255,255,255,.04);
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+.cb-dots { display: flex; gap: 5px; }
+.cb-dots span { width: 9px; height: 9px; border-radius: 50%; }
+.cb-dots span:nth-child(1) { background: #ff5f57; }
+.cb-dots span:nth-child(2) { background: #ffbd2e; }
+.cb-dots span:nth-child(3) { background: #28c840; }
+.cb-name { font-family: 'Fira Code', monospace; font-size: .7rem; color: rgba(255,255,255,.3); }
+.codeblock pre {
+  padding: 14px 18px;
+  margin: 0;
+  font-family: 'Fira Code', monospace;
+  font-size: .83rem;
+  line-height: 1.85;
+  color: var(--code-tx);
+  overflow-x: auto;
+  white-space: pre;
+}
+
+/* Syntax */
+.kw  { color: #f59fb0; }
+.str { color: #7ee8a2; }
+.fn  { color: #7ec8f8; }
+.cm  { color: #4a5568; font-style: italic; }
+.num { color: #fbbf60; }
+.op  { color: var(--amber); }
+
+/* inline code */
+ic { font-family: 'Fira Code', monospace; font-size: .82em; background: var(--paper3); padding: 1px 5px; border-radius: 3px; color: var(--amber2); }
+
+/* ═══════ INPUTS ═══════ */
+.row { display: flex; gap: .6rem; flex-wrap: wrap; margin: .8rem 0; align-items: stretch; }
+input[type="text"],
+input[type="number"],
+select,
+textarea {
+  font-family: 'Fira Code', monospace;
+  font-size: .88rem;
+  padding: .55rem .85rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--paper);
+  color: var(--ink);
+  flex: 1;
+  outline: none;
+  transition: border-color var(--trans);
+  min-height: 40px;
+}
+input:focus, select:focus, textarea:focus { border-color: var(--amber); }
+textarea { resize: vertical; min-height: 72px; font-size: .83rem; }
+
+.btn {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: .82rem;
+  padding: 0 1.1rem;
+  min-height: 40px;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  transition: all var(--trans);
+  touch-action: manipulation;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.btn-amber { background: var(--amber); color: #fff; }
+.btn-amber:hover { background: var(--amber2); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(180,83,9,.35); }
+.btn-amber:active { transform: scale(.97); }
+.btn-rust { background: var(--rust); color: #fff; }
+.btn-rust:hover { background: #9a3412; transform: translateY(-1px); }
+.btn-sage { background: var(--sage); color: #fff; }
+.btn-sage:hover { background: #2d5238; transform: translateY(-1px); }
+.btn-ghost { background: var(--paper2); color: var(--ink2); border: 1px solid var(--border); }
+.btn-ghost:hover { background: var(--paper3); }
+.btn-sm { font-size: .76rem; padding: 0 .75rem; min-height: 32px; }
+
+/* ═══════ OUTPUT ═══════ */
+.output {
+  font-family: 'Fira Code', monospace;
+  font-size: .83rem;
+  background: var(--code-bg);
+  color: #c8c0a8;
+  padding: .85rem 1.1rem;
+  border-radius: var(--radius);
+  min-height: 48px;
+  margin-top: .6rem;
+  white-space: pre-wrap;
+  overflow-x: auto;
+  line-height: 1.8;
+  border: 1px solid rgba(255,255,255,.05);
+}
+.ok  { color: #7ec89a; }
+.err { color: #e07878; }
+.hi  { color: var(--amber); }
+
+/* ═══════ CHAR BOXES ═══════ */
+.box-row {
+  display: flex; gap: 4px; margin: 1rem 0 1.6rem;
+  padding-bottom: 1.4rem; overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.char-box {
+  min-width: 38px; width: 38px; height: 38px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--paper2);
+  border: 2px solid var(--border);
+  border-radius: 4px;
+  font-family: 'Fira Code', monospace;
+  font-weight: 600;
+  font-size: .85rem;
+  position: relative;
+  transition: all .18s;
+}
+.char-box::after { content: attr(data-idx); position: absolute; bottom: -17px; font-size: .6rem; color: var(--ink3); font-family: 'Fira Code', monospace; }
+.char-box.selected { background: var(--amber); color: #fff; border-color: var(--amber2); transform: scale(1.1); }
+
+/* ═══════ TABS ═══════ */
+.tabs {
+  display: flex; gap: 2px; margin-bottom: 1rem;
+  border-bottom: 2px solid var(--border);
+  overflow-x: auto; -webkit-overflow-scrolling: touch;
+}
+.tab-btn {
+  font-family: 'Syne', sans-serif; font-weight: 700; font-size: .8rem;
+  padding: .6rem 1rem; background: none; border: none;
+  color: var(--ink3); cursor: pointer; white-space: nowrap;
+  border-bottom: 2px solid transparent; margin-bottom: -2px;
+  transition: all var(--trans);
+}
+.tab-btn:hover { color: var(--ink); }
+.tab-btn.active { color: var(--amber2); border-bottom-color: var(--amber); }
+.tab-pane { display: none; padding-top: .8rem; }
+.tab-pane.active { display: block; }
+
+/* ═══════ CALLOUT ═══════ */
+.callout {
+  display: flex; gap: .7rem; padding: .85rem 1rem;
+  border-radius: var(--radius); margin: .7rem 0;
+  font-size: .88rem; align-items: flex-start;
+}
+.callout.info { background: rgba(217,119,6,.08); border-left: 3px solid var(--amber); }
+.callout.warn { background: rgba(194,65,12,.08); border-left: 3px solid var(--rust); }
+.callout.tip  { background: rgba(61,107,79,.1); border-left: 3px solid var(--sage); }
+.callout i { flex-shrink: 0; font-size: 1rem; margin-top: .1rem; }
+.callout p { color: var(--ink2); margin: 0; }
+.callout p b { color: var(--ink); }
+
+/* ═══════ TABLE ═══════ */
+.tbl { width: 100%; border-collapse: separate; border-spacing: 0; border-radius: var(--radius); overflow: hidden; margin: .8rem 0; border: 1px solid var(--border); }
+.tbl th { background: var(--paper3); color: var(--ink2); font-family: 'Syne', sans-serif; font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; padding: 9px 14px; text-align: left; }
+.tbl td { background: #fff; padding: 9px 14px; font-size: .86rem; border-top: 1px solid var(--border); }
+.tbl tr:first-child td { border-top: none; }
+.tbl ic { display: inline; }
+
+/* ═══════ QUIZ ═══════ */
+.q-progress { height: 5px; background: var(--paper3); border-radius: 3px; margin: .6rem 0 1.2rem; overflow: hidden; }
+.q-fill { height: 100%; background: linear-gradient(90deg, var(--amber), var(--rust)); width: 0; transition: width .4s ease; border-radius: 3px; }
+.quiz-opt {
+  display: flex; align-items: center; gap: .8rem;
+  padding: .85rem 1.1rem; margin: .45rem 0;
+  border: 1.5px solid var(--border); border-radius: var(--radius);
+  cursor: pointer; transition: all var(--trans); user-select: none;
+  background: #fff; font-size: .9rem;
+}
+.quiz-opt:hover { border-color: var(--amber); background: rgba(217,119,6,.04); }
+.opt-letter { width: 26px; height: 26px; border-radius: 50%; background: var(--paper2); display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-size: .74rem; font-weight: 800; flex-shrink: 0; }
+.quiz-opt.correct { border-color: var(--sage); background: rgba(61,107,79,.07); }
+.quiz-opt.correct .opt-letter { background: var(--sage); color: #fff; }
+.quiz-opt.wrong { border-color: var(--rust); background: rgba(194,65,12,.06); }
+.quiz-opt.wrong .opt-letter { background: var(--rust); color: #fff; }
+.expl-box { display: none; margin-top: .7rem; padding: .7rem 1rem; background: rgba(217,119,6,.07); border-left: 3px solid var(--amber); border-radius: 0 4px 4px 0; font-size: .87rem; color: var(--ink2); }
+
+/* ═══════ METHOD GRID ═══════ */
+.method-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px,1fr)); gap: .55rem; margin: .8rem 0; }
+.method-chip {
+  background: var(--paper);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: .6rem .9rem;
+  cursor: pointer;
+  transition: all var(--trans);
+}
+.method-chip:hover { border-color: var(--amber); background: rgba(217,119,6,.06); }
+.method-chip.active { border-color: var(--amber); background: rgba(217,119,6,.1); }
+.method-chip .mn { font-family: 'Fira Code', monospace; font-size: .78rem; color: var(--amber2); font-weight: 500; }
+.method-chip .md { font-size: .73rem; color: var(--ink3); margin-top: .15rem; }
+
+/* ═══════ GAME ═══════ */
+.game-area { background: var(--paper2); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.4rem; text-align: center; }
+.game-hint { font-size: .84rem; color: var(--ink3); font-style: italic; margin-bottom: .8rem; }
+.game-word { font-family: 'Fira Code', monospace; font-size: 2rem; font-weight: 600; letter-spacing: .4em; color: var(--ink); margin: .8rem 0; min-height: 3rem; }
+.game-lives { font-size: 1.2rem; letter-spacing: .25em; margin-bottom: 1rem; }
+.letter-grid { display: flex; flex-wrap: wrap; gap: .35rem; justify-content: center; margin: .8rem 0; }
+.letter-btn {
+  width: 36px; height: 36px;
+  border: 1.5px solid var(--border);
+  border-radius: 4px;
+  background: #fff;
+  color: var(--ink);
+  font-family: 'Fira Code', monospace;
+  font-size: .8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .15s;
+}
+.letter-btn:hover:not(:disabled) { border-color: var(--amber); background: rgba(217,119,6,.08); }
+.letter-btn:disabled { opacity: .3; cursor: default; }
+.letter-btn.hit { border-color: var(--sage); background: rgba(61,107,79,.12); color: var(--sage); }
+.letter-btn.miss { border-color: var(--rust); background: rgba(194,65,12,.08); color: var(--rust); }
+.score-chip { font-family: 'Syne', sans-serif; font-size: .78rem; font-weight: 700; background: var(--amber); color: #fff; padding: .2rem .7rem; border-radius: 3px; }
+
+/* ═══════ ASCII TABLE ═══════ */
+.ascii-grid { display: flex; flex-wrap: wrap; gap: .3rem; margin-top: .8rem; }
+.ascii-cell {
+  min-width: 52px;
+  background: #fff; border: 1px solid var(--border); border-radius: 4px;
+  padding: .4rem .3rem; text-align: center; cursor: default;
+  transition: border-color var(--trans);
+}
+.ascii-cell:hover { border-color: var(--amber); }
+.ascii-char { display: block; font-size: 1.3rem; line-height: 1.3; }
+.ascii-dec { display: block; font-family: 'Fira Code', monospace; font-size: .66rem; color: var(--amber2); }
+.ascii-hex { display: block; font-family: 'Fira Code', monospace; font-size: .6rem; color: var(--ink3); }
+
+/* ═══════ FOOTER ═══════ */
+.sidebar-footer {
+  padding: 1rem 1.4rem;
+  font-size: .75rem;
+  color: var(--ink3);
+  border-top: 1px solid var(--border);
+  margin-top: 1rem;
+  font-style: italic;
+}
+
+/* ═══════ DARK VARIANT (светлая тема по умолчанию) ═══════ */
+body.dark {
+  --paper:   #1a1710;
+  --paper2:  #221f14;
+  --paper3:  #2d2918;
+  --ink:     #ede8da;
+  --ink2:    #b8ad96;
+  --ink3:    #7a7060;
+  --border:  rgba(200,170,80,.12);
+  --shadow:  0 2px 16px rgba(0,0,0,.4);
+  --code-bg: #110f0a;
+}
+body.dark .card { background: var(--paper2); }
+body.dark .quiz-opt { background: var(--paper2); }
+body.dark .method-chip { background: var(--paper2); }
+body.dark .tbl td { background: var(--paper2); }
+body.dark .tbl th { background: var(--paper3); }
+body.dark input, body.dark select, body.dark textarea { background: var(--paper3); border-color: var(--border); color: var(--ink); }
+body.dark .letter-btn { background: var(--paper2); }
+body.dark .ascii-cell { background: var(--paper2); }
+body.dark .game-area { background: var(--paper2); }
+
+/* ═══════ MOBILE ═══════ */
+@media (max-width: 680px) {
+  .app { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+  .page { padding: 1.4rem 1rem 2.5rem; }
+  input, select, .btn { font-size: 16px !important; }
+}
+/* ═══════ SPLASH SCREEN ═══════ */
+#splash {
+  position: fixed; inset: 0; z-index: 999;
+  background: var(--paper);
+  display: flex; align-items: center; justify-content: center;
+  padding: 1.5rem;
+  transition: opacity .5s ease, transform .5s ease;
+}
+#splash.hiding {
+  opacity: 0;
+  transform: scale(.97);
+  pointer-events: none;
+}
+.splash-box {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 8px 40px rgba(80,50,10,.14);
+  max-width: 540px;
+  width: 100%;
+  padding: 2.2rem 2rem 1.8rem;
+  position: relative;
+}
+.splash-box::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--amber), var(--rust));
+  border-radius: 10px 10px 0 0;
+}
+.splash-label {
+  font-family: 'Fira Code', monospace;
+  font-size: .68rem;
+  background: var(--amber);
+  color: #fff;
+  padding: 2px 9px;
+  border-radius: 2px;
+  display: inline-block;
+  margin-bottom: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+.splash-q {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.18rem;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.4;
+  margin-bottom: 1.4rem;
+}
+.splash-opts { display: flex; flex-direction: column; gap: .5rem; margin-bottom: 1.4rem; }
+.splash-opt {
+  display: flex; align-items: center; gap: .75rem;
+  padding: .8rem 1rem;
+  border: 1.5px solid var(--border);
+  border-radius: 6px;
+  background: var(--paper);
+  cursor: pointer;
+  font-size: .92rem;
+  color: var(--ink2);
+  transition: all var(--trans);
+  font-family: 'Lora', serif;
+}
+.splash-opt:hover { border-color: var(--amber); background: rgba(217,119,6,.05); color: var(--ink); }
+.splash-opt .splash-letter {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: var(--paper3);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Syne', sans-serif; font-size: .72rem; font-weight: 800;
+  flex-shrink: 0; color: var(--ink3);
+  transition: all var(--trans);
+}
+.splash-opt.correct { border-color: var(--sage); background: rgba(61,107,79,.07); color: var(--ink); }
+.splash-opt.correct .splash-letter { background: var(--sage); color: #fff; }
+.splash-opt.wrong { border-color: var(--rust); background: rgba(194,65,12,.06); color: var(--ink); }
+.splash-opt.wrong .splash-letter { background: var(--rust); color: #fff; }
+.splash-expl {
+  display: none;
+  font-size: .87rem;
+  color: var(--ink3);
+  font-style: italic;
+  padding: .65rem .9rem;
+  background: rgba(217,119,6,.07);
+  border-left: 3px solid var(--amber);
+  border-radius: 0 4px 4px 0;
+  margin-bottom: 1.2rem;
+}
+.splash-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: .6rem;
+}
+.splash-skip {
+  font-family: 'Syne', sans-serif; font-size: .8rem; font-weight: 600;
+  color: var(--ink3); background: none; border: none; cursor: pointer;
+  padding: .3rem 0; text-decoration: underline; text-underline-offset: 3px;
+  transition: color var(--trans);
+}
+.splash-skip:hover { color: var(--ink2); }
+.splash-enter {
+  font-family: 'Syne', sans-serif; font-weight: 700; font-size: .85rem;
+  background: var(--amber); color: #fff;
+  border: none; border-radius: 5px; padding: .6rem 1.4rem;
+  cursor: pointer; display: none;
+  transition: background var(--trans), transform var(--trans);
+}
+.splash-enter:hover { background: var(--amber2); transform: translateY(-1px); }
+.splash-enter.visible { display: inline-flex; align-items: center; gap: .4rem; }
+.splash-logo {
+  font-family: 'Syne', sans-serif; font-size: .82rem; font-weight: 700;
+  color: var(--ink3); margin-bottom: 1.6rem;
+  display: flex; align-items: center; gap: .5rem;
+}
+.splash-logo span { color: var(--amber); }
+
+  </style>
+</head>
+<body>
+
+<!-- ═══ SPLASH ═══ -->
+<div id="splash">
+  <div class="splash-box">
+    <div class="splash-logo">🐍 <span>str()</span> — Строковые данные</div>
+    <div class="splash-label">Вопрос перед началом</div>
+    <div class="splash-q" id="splash-q"></div>
+    <div class="splash-opts" id="splash-opts"></div>
+    <div class="splash-expl" id="splash-expl"></div>
+    <div class="splash-footer">
+      <button class="splash-skip" id="splash-skip">Пропустить →</button>
+      <button class="splash-enter" id="splash-enter">Войти на сайт →</button>
+    </div>
+  </div>
+</div>
+
+<div class="app">
+
+  <!-- ═══ TOPBAR ═══ -->
+  <header class="topbar">
+    <div class="topbar-logo">🐍 <span>str()</span> Python</div>
+    <span class="topbar-tag">Строковые данные</span>
+    <div class="topbar-progress"><div class="topbar-progress-fill" id="progFill"></div></div>
+    <button class="topbar-theme" id="themeBtn" title="Тема">☀️</button>
+  </header>
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <nav class="sidebar">
+    <div class="sidebar-section-label">Основы</div>
+    <a class="sidebar-link active" href="#basics">Что такое строка</a>
+    <a class="sidebar-link" href="#slicing">Индексы и срезы</a>
+
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-section-label">Инструменты</div>
+    <a class="sidebar-link" href="#methods">Методы строк</a>
+    <a class="sidebar-link" href="#formatting">Форматирование</a>
+
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-section-label">Глубже</div>
+    <a class="sidebar-link" href="#unicode">Unicode и ord/chr</a>
+
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-section-label">Практика</div>
+    <a class="sidebar-link" href="#game">Игра: угадай слово</a>
+    <a class="sidebar-link" href="#quiz">Итоговый тест</a>
+
+    <div class="sidebar-footer">
+      Учебная доска · Python 3.x<br>Первый курс
+    </div>
+  </nav>
+
+  <!-- ═══ CONTENT ═══ -->
+  <div class="content">
+
+    <!-- ════ ОСНОВЫ ════ -->
+    <section id="basics" class="active">
+      <div class="page">
+        <div class="page-header">
+          <div class="page-num">01</div>
+          <div class="page-header-text">
+            <div class="page-label">module · basics</div>
+            <div class="page-title">Что такое строка?</div>
+            <div class="page-desc">Неизменяемая последовательность символов Unicode</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Создание строк</div>
+          <p>Строка — это тип данных <ic>str</ic>. Создаётся в одинарных, двойных или тройных кавычках. Строки <b>неизменяемы</b>: изменить символ «на месте» нельзя.</p>
+          <div class="codeblock">
+            <div class="codeblock-top"><div class="cb-dots"><span></span><span></span><span></span></div><div class="cb-name">create.py</div></div>
+            <pre><span class="cm"># Три вида кавычек</span>
+s1 = <span class="str">'Привет'</span>           <span class="cm"># одинарные</span>
+s2 = <span class="str">"Hello, World!"</span>   <span class="cm"># двойные</span>
+s3 = <span class="str">"""Многострочный
+текст"""</span>             <span class="cm"># тройные</span>
+
+<span class="fn">print</span>(<span class="fn">type</span>(s1))     <span class="cm"># &lt;class 'str'&gt;</span>
+<span class="fn">print</span>(<span class="fn">len</span>(s1))      <span class="cm"># 6</span></pre>
+          </div>
+          <div class="callout warn">
+            <i>⚠️</i>
+            <p><b>Immutable!</b> <ic>s[0] = 'A'</ic> вызовет <ic>TypeError</ic>. Любая операция создаёт <b>новую</b> строку.</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Конкатенация и повтор</div>
+          <div class="row">
+            <input type="text" id="str1" value="Hello" placeholder="Строка 1" style="max-width:130px;">
+            <input type="text" id="str2" value=" World" placeholder="Строка 2" style="max-width:130px;">
+            <button class="btn btn-amber" id="btnConcat">+ Сложить</button>
+            <button class="btn btn-rust" id="btnRepeat">× Повтор</button>
+          </div>
+          <div class="output" id="concat-out">Нажми кнопку...</div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">len() и оператор in</div>
+          <div class="row">
+            <input type="text" id="len-str" value="Python программирование">
+            <input type="text" id="in-sub" value="Python" style="max-width:120px;">
+            <button class="btn btn-amber" id="btnLen">Вычислить</button>
+          </div>
+          <div class="output" id="len-out">Введи строку...</div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Escape-символы</div>
+          <table class="tbl">
+            <thead><tr><th>Символ</th><th>Значение</th><th>Пример</th></tr></thead>
+            <tbody>
+              <tr><td><ic>\n</ic></td><td>Новая строка</td><td><ic>"Hello\nWorld"</ic></td></tr>
+              <tr><td><ic>\t</ic></td><td>Табуляция</td><td><ic>"Name:\tAnna"</ic></td></tr>
+              <tr><td><ic>\\</ic></td><td>Обратный слеш</td><td><ic>"C:\\Users"</ic></td></tr>
+              <tr><td><ic>\'</ic></td><td>Кавычка</td><td><ic>'I\'m OK'</ic></td></tr>
+              <tr><td><ic>\u{код}</ic></td><td>Unicode</td><td><ic>"\u2764"</ic> → ❤</td></tr>
+            </tbody>
+          </table>
+          <div class="row" style="margin-top:.6rem;">
+            <input type="text" id="escape-in" value="Hello\nWorld\t!">
+            <button class="btn btn-amber" id="btnEscape">Показать</button>
+          </div>
+          <div class="output" id="escape-out"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Итерация по строке</div>
+          <p>Строка — это последовательность, по которой можно пройтись циклом <ic>for</ic>. Каждая итерация даёт один символ.</p>
+          <div class="codeblock">
+            <div class="codeblock-top"><div class="cb-dots"><span></span><span></span><span></span></div><div class="cb-name">iterate.py</div></div>
+            <pre><span class="kw">for</span> char <span class="kw">in</span> <span class="str">"Hello"</span>:
+    <span class="fn">print</span>(char)
+<span class="cm"># H</span>
+<span class="cm"># e</span>
+<span class="cm"># l</span>
+<span class="cm"># l</span>
+<span class="cm"># o</span>
+
+<span class="cm"># Перебор с индексами — enumerate()</span>
+<span class="kw">for</span> i, ch <span class="kw">in</span> <span class="fn">enumerate</span>(<span class="str">"Hi"</span>):
+    <span class="fn">print</span>(<span class="str">f"[{i}] = '{ch}'"</span>)</pre>
+          </div>
+          <div class="row">
+            <input type="text" id="iter-str" value="Python" placeholder="Строка для итерации">
+            <button class="btn btn-amber" id="btnIter">▶ Итерировать</button>
+          </div>
+          <div class="output" id="iter-out">Нажми кнопку...</div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">️ Сравнение строк</div>
+          <p>Строки сравниваются лексикографически — символ за символом по их Unicode-кодам.</p>
+          <div class="codeblock">
+            <div class="codeblock-top"><div class="cb-dots"><span></span><span></span><span></span></div><div class="cb-name">compare.py</div></div>
+            <pre>str1 = <span class="str">"apple"</span>;  str2 = <span class="str">"banana"</span>;  str3 = <span class="str">"apple"</span>
+
+<span class="fn">print</span>(str1 <span class="op">==</span> str2)   <span class="cm"># False</span>
+<span class="fn">print</span>(str1 <span class="op">==</span> str3)   <span class="cm"># True</span>
+<span class="fn">print</span>(str1 <span class="op">&lt;</span>  str2)   <span class="cm"># True  ('a' &lt; 'b' по Unicode)</span>
+<span class="fn">print</span>(<span class="str">"Z"</span> <span class="op">&gt;</span> <span class="str">"a"</span>)      <span class="cm"># False (Z=90, a=97)</span></pre>
+          </div>
+          <div class="row">
+            <input type="text" id="cmp1" value="apple" style="max-width:140px;">
+            <input type="text" id="cmp2" value="banana" style="max-width:140px;">
+            <button class="btn btn-amber" id="btnCmp">Сравнить</button>
+          </div>
+          <div class="output" id="cmp-out">Введи строки и нажми кнопку...</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════ СРЕЗЫ ════ -->
+    <section id="slicing">
+      <div class="page">
+        <div class="page-header">
+          <div class="page-num">02</div>
+          <div class="page-header-text">
+            <div class="page-label">module · indexing</div>
+            <div class="page-title">Индексы и срезы</div>
+            <div class="page-desc">s[start : stop : step] — мощный инструмент Python</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Визуализатор срезов</div>
+          <p>Меняй параметры — наблюдай, какие символы выделяются.</p>
+          <div class="row">
+            <input type="text" id="slice-input" value="PythonProgramming" style="flex:2;">
+          </div>
+          <div class="row">
+            <label style="display:flex;align-items:center;gap:.4rem;font-size:.82rem;font-family:'Syne',sans-serif;font-weight:700;color:var(--ink2);">start<input type="number" id="start" value="0" style="width:60px;flex:0 0 auto;"></label>
+            <label style="display:flex;align-items:center;gap:.4rem;font-size:.82rem;font-family:'Syne',sans-serif;font-weight:700;color:var(--ink2);">stop<input type="number" id="stop" value="17" style="width:60px;flex:0 0 auto;"></label>
+            <label style="display:flex;align-items:center;gap:.4rem;font-size:.82rem;font-family:'Syne',sans-serif;font-weight:700;color:var(--ink2);">step<input type="number" id="step" value="1" style="width:60px;flex:0 0 auto;"></label>
+            <button class="btn btn-amber" id="btnSlice">▶ Применить</button>
+          </div>
+          <div class="box-row" id="slice-boxes"></div>
+          <div class="output" id="slice-out"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Популярные рецепты</div>
+          <div class="tabs">
+            <button class="tab-btn active" data-tab="sr1">Разворот</button>
+            <button class="tab-btn" data-tab="sr2">Каждый 2-й</button>
+            <button class="tab-btn" data-tab="sr3">Последние N</button>
+            <button class="tab-btn" data-tab="sr4">Без крайних</button>
+          </div>
+          <div class="tab-pane active" id="sr1">
+            <div class="codeblock"><div class="codeblock-top"><div class="cb-dots"><span></span><span></span><span></span></div><div class="cb-name">reverse.py</div></div>
+            <pre>s = <span class="str">"Python"</span>
+<span class="fn">print</span>(s[::<span class="op">-1</span>])  <span class="cm"># → "nohtyP"</span></pre></div>
+            <div class="callout tip"><i>💡</i><p>step = -1 обходит строку <b>с конца</b>. Самый питонический способ развернуть строку.</p></div>
+          </div>
+          <div class="tab-pane" id="sr2">
+            <div class="codeblock"><div class="codeblock-top"><div class="cb-dots"><span></span><span></span><span></span></div><div class="cb-name">every2.py</div></div>
+            <pre>s = <span class="str">"abcdefgh"</span>
+<span class="fn">print</span>(s[::<span class="num">2</span>])  <span class="cm"># → "aceg"</span></pre></div>
+          </div>
+          <div class="tab-pane" id="sr3">
+            <div class="codeblock"><div class="codeblock-top"><div class="cb-dots"><span></span><span></span><span></span></div><div class="cb-name">last_n.py</div></div>
+            <pre>s = <span class="str">"Hello"</span>
+<span class="fn">print</span>(s[<span class="op">-3</span>:])  <span class="cm"># → "llo"</span>
+<span class="fn">print</span>(s[<span class="op">-1</span>:])  <span class="cm"># → "o"   (последний)</span></pre></div>
+          </div>
+          <div class="tab-pane" id="sr4">
+            <div class="codeblock"><div class="codeblock-top"><div class="cb-dots"><span></span><span></span><span></span></div><div class="cb-name">trim.py</div></div>
+            <pre>s = <span class="str">"!Hello!"</span>
+<span class="fn">print</span>(s[<span class="num">1</span>:<span class="op">-1</span>])  <span class="cm"># → "Hello"  (без первого и последнего)</span></pre></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Тренажёр срезов</div>
+          <p id="slice-task-text" style="font-weight:700;font-family:'Syne',sans-serif;margin-bottom:.7rem;"></p>
+          <div class="row">
+            <input type="text" id="slice-answer" placeholder="s[start:stop:step]">
+            <button class="btn btn-amber" id="btnSliceCheck">Проверить</button>
+            <button class="btn btn-ghost btn-sm" id="btnSliceSkip">→ Далее</button>
+          </div>
+          <div class="output" id="slice-task-out"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════ МЕТОДЫ ════ -->
+    <section id="methods">
+      <div class="page">
+        <div class="page-header">
+          <div class="page-num">03</div>
+          <div class="page-header-text">
+            <div class="page-label">module · methods</div>
+            <div class="page-title">Методы строк</div>
+            <div class="page-desc">Встроенные функции для работы с текстом</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Лаборатория методов</div>
+          <p>Введи строку, выбери метод — увидишь код и результат.</p>
+          <input type="text" id="method-input" value="  Hello Python!  " style="width:100%;margin:.5rem 0;">
+          <div class="method-grid" id="methodGrid"></div>
+          <div class="codeblock" style="margin-top:1rem;">
+            <div class="codeblock-top"><div class="cb-dots"><span></span><span></span><span></span></div><div class="cb-name" id="method-fname">method.py</div></div>
+            <pre id="method-code" style="font-family:'Fira Code',monospace;font-size:.83rem;line-height:1.85;padding:14px 18px;overflow-x:auto;"></pre>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-top:.6rem;">
+            <div>
+              <div style="font-size:.7rem;font-family:'Syne',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);margin-bottom:.3rem;">До:</div>
+              <div id="before-method" style="font-family:'Fira Code',monospace;font-size:.86rem;background:var(--paper2);padding:.45rem .75rem;border-radius:4px;color:var(--rust);"></div>
+            </div>
+            <div>
+              <div style="font-size:.7rem;font-family:'Syne',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);margin-bottom:.3rem;">После:</div>
+              <div id="after-method" style="font-family:'Fira Code',monospace;font-size:.86rem;background:var(--paper2);padding:.45rem .75rem;border-radius:4px;color:var(--sage);"></div>
+            </div>
+          </div>
+          <div id="method-hint" style="margin-top:.6rem;font-size:.86rem;color:var(--ink3);font-style:italic;"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Цепочка методов</div>
+          <p>Методы можно вызывать друг за другом: <ic>s.strip().lower().replace(" ", "_")</ic></p>
+          <input type="text" id="chain-input" value="  Hello World  " style="width:100%;margin:.5rem 0;">
+          <div class="row">
+            <select id="chain-m1"><option value="">— шаг 1 —</option><option value="strip">.strip()</option><option value="lower">.lower()</option><option value="upper">.upper()</option><option value="title">.title()</option><option value="capitalize">.capitalize()</option></select>
+            <select id="chain-m2"><option value="">— шаг 2 —</option><option value="strip">.strip()</option><option value="lower">.lower()</option><option value="upper">.upper()</option><option value="title">.title()</option><option value="capitalize">.capitalize()</option></select>
+            <select id="chain-m3"><option value="">— шаг 3 —</option><option value="strip">.strip()</option><option value="lower">.lower()</option><option value="upper">.upper()</option><option value="title">.title()</option><option value="capitalize">.capitalize()</option></select>
+            <button class="btn btn-amber" id="btnChain">▶</button>
+          </div>
+          <div class="output" id="chain-out">Выбери методы...</div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Шпаргалка</div>
+          <table class="tbl">
+            <thead><tr><th>Метод</th><th>Что делает</th><th>Пример → результат</th></tr></thead>
+            <tbody id="cs-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════ ФОРМАТИРОВАНИЕ ════ -->
+    <section id="formatting">
+      <div class="page">
+        <div class="page-header">
+          <div class="page-num">04</div>
+          <div class="page-header-text">
+            <div class="page-label">module · formatting</div>
+            <div class="page-title">Форматирование строк</div>
+            <div class="page-desc">Три способа вставить данные в строку</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Три подхода</div>
+          <div class="tabs">
+            <button class="tab-btn active" data-tab="ff">f-строки ✨</button>
+            <button class="tab-btn" data-tab="fformat">.format()</button>
+            <button class="tab-btn" data-tab="fpct">% оператор</button>
+          </div>
+          <div class="tab-pane active" id="ff">
+            <div class="codeblock"><div class="codeblock-top"><div class="cb-dots"><span></span><span></span><span></span></div><div class="cb-name">fstring.py</div></div>
+            <pre>name = <span class="str">"Анна"</span>; age = <span class="num">19</span>; gpa = <span class="num">4.85</span>
+
+<span class="cm"># f-строка — Python 3.6+, рекомендуемый способ</span>
+msg = <span class="str">f"Студент {name}, возраст: {age}, балл: {gpa:.1f}"</span>
+
+<span class="cm"># Выражения прямо внутри!</span>
+<span class="fn">print</span>(<span class="str">f"Через 5 лет: {age + 5} лет"</span>)</pre></div>
+          </div>
+          <div class="tab-pane" id="fformat">
+            <div class="codeblock"><div class="codeblock-top"><div class="cb-dots"><span></span><span></span><span></span></div><div class="cb-name">format.py</div></div>
+            <pre>name, age = <span class="str">"Анна"</span>, <span class="num">19</span>
+
+<span class="cm"># По позиции</span>
+<span class="str">"Студент {}, возраст: {}"</span>.<span class="fn">format</span>(name, age)
+
+<span class="cm"># По имени</span>
+<span class="str">"Студент {name}, возраст: {age}"</span>.<span class="fn">format</span>(name=name, age=age)</pre></div>
+          </div>
+          <div class="tab-pane" id="fpct">
+            <div class="codeblock"><div class="codeblock-top"><div class="cb-dots"><span></span><span></span><span></span></div><div class="cb-name">percent.py</div></div>
+            <pre>name, age = <span class="str">"Анна"</span>, <span class="num">19</span>
+
+<span class="cm"># Старый стиль (Python 2), не рекомендуется</span>
+<span class="str">"Студент %s, возраст: %d"</span> % (name, age)
+<span class="cm"># %s — строка, %d — целое, %f — вещественное</span></pre></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">️ Конструктор f-строки</div>
+          <div class="row">
+            <label style="display:flex;align-items:center;gap:.4rem;flex:1;font-size:.82rem;font-family:'Syne',sans-serif;font-weight:700;color:var(--ink2);">Имя<input type="text" id="f-name" value="Анна"></label>
+            <label style="display:flex;align-items:center;gap:.4rem;font-size:.82rem;font-family:'Syne',sans-serif;font-weight:700;color:var(--ink2);">Возраст<input type="number" id="f-age" value="19" style="width:70px;flex:0 0 auto;"></label>
+          </div>
+          <div class="row">
+            <label style="display:flex;align-items:center;gap:.4rem;flex:1;font-size:.82rem;font-family:'Syne',sans-serif;font-weight:700;color:var(--ink2);">Курс<input type="text" id="f-course" value="Информатика"></label>
+            <label style="display:flex;align-items:center;gap:.4rem;font-size:.82rem;font-family:'Syne',sans-serif;font-weight:700;color:var(--ink2);">Балл<input type="number" id="f-gpa" value="4.7" step="0.1" style="width:70px;flex:0 0 auto;"></label>
+          </div>
+          <div class="output" id="f-output"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Форматирование чисел</div>
+          <div class="codeblock"><div class="codeblock-top"><div class="cb-dots"><span></span><span></span><span></span></div><div class="cb-name">numfmt.py</div></div>
+          <pre>pi = <span class="num">3.14159265</span>; n = <span class="num">1234567</span>
+
+<span class="fn">print</span>(<span class="str">f"{pi:.2f}"</span>)       <span class="cm"># → 3.14</span>
+<span class="fn">print</span>(<span class="str">f"{n:,}"</span>)          <span class="cm"># → 1,234,567</span>
+<span class="fn">print</span>(<span class="str">f"{n:08d}"</span>)        <span class="cm"># → 01234567</span>
+<span class="fn">print</span>(<span class="str">f"{'ok':^20}"</span>)     <span class="cm"># → центрирование</span></pre></div>
+          <div class="row">
+            <input type="number" id="fmt-num" value="3.14159" step="any">
+            <select id="fmt-spec">
+              <option value=".2f">:.2f  (2 знака)</option>
+              <option value=".0f">:.0f  (целое)</option>
+              <option value=".4f">:.4f  (4 знака)</option>
+              <option value="e">:e   (экспонента)</option>
+              <option value="%">:%   (проценты)</option>
+            </select>
+            <button class="btn btn-amber" id="btnFmtNum">→</button>
+          </div>
+          <div class="output" id="fmt-num-out"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════ UNICODE ════ -->
+    <section id="unicode">
+      <div class="page">
+        <div class="page-header">
+          <div class="page-num">05</div>
+          <div class="page-header-text">
+            <div class="page-label">module · unicode</div>
+            <div class="page-title">Unicode, ord() и chr()</div>
+            <div class="page-desc">Каждый символ — это число</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Таблица ASCII-символов</div>
+          <p>Каждый символ имеет числовой код. Наведи — увидишь dec и hex.</p>
+          <div class="ascii-grid" id="asciiGrid"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">↔️ ord() и chr()</div>
+          <div class="codeblock"><div class="codeblock-top"><div class="cb-dots"><span></span><span></span><span></span></div><div class="cb-name">unicode.py</div></div>
+          <pre><span class="fn">ord</span>(<span class="str">'A'</span>)    <span class="cm"># → 65</span>
+<span class="fn">ord</span>(<span class="str">'а'</span>)    <span class="cm"># → 1072  (кириллица)</span>
+<span class="fn">ord</span>(<span class="str">'❤'</span>)    <span class="cm"># → 10084</span>
+
+<span class="fn">chr</span>(<span class="num">65</span>)     <span class="cm"># → 'A'</span>
+<span class="fn">chr</span>(<span class="num">1040</span>)   <span class="cm"># → 'А'</span>
+<span class="fn">chr</span>(<span class="num">128512</span>) <span class="cm"># → '😀'</span></pre></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:.8rem;">
+            <div>
+              <div style="font-size:.72rem;font-family:'Syne',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);margin-bottom:.4rem;">ord( символ ) → код</div>
+              <div class="row"><input type="text" id="ord-input" value="A" maxlength="2" style="max-width:70px;"><button class="btn btn-amber" id="btnOrd">ord()</button></div>
+              <div class="output" id="ord-out" style="min-height:44px;"></div>
+            </div>
+            <div>
+              <div style="font-size:.72rem;font-family:'Syne',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);margin-bottom:.4rem;">chr( число ) → символ</div>
+              <div class="row"><input type="number" id="chr-input" value="65" style="max-width:90px;"><button class="btn btn-amber" id="btnChr">chr()</button></div>
+              <div class="output" id="chr-out" style="min-height:44px;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Шифр Цезаря</div>
+          <p>Сдвигаем код каждого символа на N позиций — наглядный пример ord() + chr().</p>
+          <div class="codeblock"><div class="codeblock-top"><div class="cb-dots"><span></span><span></span><span></span></div><div class="cb-name">caesar.py</div></div>
+          <pre><span class="kw">def</span> <span class="fn">caesar</span>(text, shift):
+    <span class="kw">return</span> <span class="str">""</span>.<span class="fn">join</span>(<span class="fn">chr</span>(<span class="fn">ord</span>(c) + shift) <span class="kw">for</span> c <span class="kw">in</span> text)
+
+<span class="fn">print</span>(<span class="fn">caesar</span>(<span class="str">"Hello"</span>, <span class="num">1</span>))  <span class="cm"># → "Ifmmp"</span></pre></div>
+          <div class="row">
+            <input type="text" id="caesar-text" value="Hello World" style="flex:2;">
+            <label style="display:flex;align-items:center;gap:.4rem;font-size:.82rem;font-family:'Syne',sans-serif;font-weight:700;color:var(--ink2);">Сдвиг<input type="number" id="caesar-shift" value="3" style="width:60px;flex:0 0 auto;"></label>
+            <button class="btn btn-amber" id="btnCaesar">Зашифровать</button>
+          </div>
+          <div class="output" id="caesar-out"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════ ИГРА ════ -->
+    <section id="game">
+      <div class="page">
+        <div class="page-header">
+          <div class="page-num">06</div>
+          <div class="page-header-text">
+            <div class="page-label">practice · game</div>
+            <div class="page-title">Угадай Python-слово</div>
+            <div class="page-desc">Виселица на тему строк. Угадывай буквы!</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+            <div class="card-title" style="margin:0;">🎯 Игра</div>
+            <div class="score-chip">Очки: <span id="gameScore">0</span></div>
+          </div>
+
+          <div class="game-area" id="gameArea">
+            <div class="game-hint" id="gameHint">Загрузка...</div>
+            <div class="game-word" id="gameWord">...</div>
+            <div class="game-lives" id="gameLives">❤️❤️❤️❤️❤️</div>
+            <div class="letter-grid" id="letterGrid"></div>
+          </div>
+
+          <div id="gameMsg" style="display:none;text-align:center;padding:1.5rem;">
+            <div style="font-size:2.5rem;margin-bottom:.5rem;" id="gameMsgIcon">🎉</div>
+            <div style="font-size:1.1rem;font-weight:700;font-family:'Syne',sans-serif;margin-bottom:.4rem;" id="gameMsgText"></div>
+            <div style="color:var(--ink3);font-size:.86rem;margin-bottom:1rem;" id="gameMsgSub"></div>
+            <button class="btn btn-amber" id="btnNextWord">▶ Следующее слово</button>
+          </div>
+
+          <div style="margin-top:.8rem;">
+            <button class="btn btn-ghost btn-sm" id="btnSkipGame">Пропустить →</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Все слова</div>
+          <div style="display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.5rem;" id="wordList"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════ ТЕСТ ════ -->
+    <section id="quiz">
+      <div class="page">
+        <div class="page-header">
+          <div class="page-num">07</div>
+          <div class="page-header-text">
+            <div class="page-label">practice · quiz</div>
+            <div class="page-title">Итоговый тест</div>
+            <div class="page-desc">15 вопросов по всем разделам</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.3rem;font-family:'Syne',sans-serif;font-size:.82rem;font-weight:700;color:var(--ink3);">
+            <span>Вопрос <span id="q-num">1</span> из <span id="q-total">15</span></span>
+            <span style="color:var(--amber2);">✓ <span id="q-score">0</span> правильно</span>
+          </div>
+          <div class="q-progress"><div class="q-fill" id="quiz-progress"></div></div>
+          <div id="quiz-container"></div>
+          <button class="btn btn-amber" id="next-q" style="margin-top:1rem;display:none;width:100%;">Следующий вопрос →</button>
+          <div id="quiz-result" style="display:none;text-align:center;padding:1.5rem 0;">
+            <div style="font-size:3rem;margin-bottom:.5rem;" id="result-emoji">🎉</div>
+            <div style="font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;margin-bottom:.3rem;">
+              <span id="score" style="color:var(--amber);">0</span> / 15
+            </div>
+            <p id="score-msg" style="color:var(--ink3);font-style:italic;margin-bottom:1rem;"></p>
+            <div style="max-width:280px;margin:0 auto .9rem;height:8px;background:var(--paper2);border-radius:4px;overflow:hidden;">
+              <div id="score-bar" style="height:100%;background:linear-gradient(90deg,var(--amber),var(--rust));width:0;transition:width .8s .2s;border-radius:4px;"></div>
+            </div>
+            <button class="btn btn-amber" id="btnRestart" style="width:100%;">🔁 Пройти заново</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /content -->
+</div><!-- /app -->
+
+<script>
+// ═══ SPLASH ═══
+const splashQuestions = [
+  {
+    q: 'Что такое алгоритм?',
+    opts: ['Язык программирования', 'Точная последовательность шагов для решения задачи', 'Тип данных в Python', 'Программа для компиляции кода'],
+    ans: 1,
+    expl: 'Алгоритм — это точная конечная последовательность инструкций, ведущая к решению задачи.'
+  },
+  {
+    q: 'Какой тип данных используется для хранения текста в Python?',
+    opts: ['int', 'bool', 'str', 'list'],
+    ans: 2,
+    expl: 'str (string) — строковый тип данных, предназначенный для хранения текста.'
+  },
+  {
+    q: 'Что делает функция print() в Python?',
+    opts: ['Считывает данные с клавиатуры', 'Выводит данные на экран', 'Сохраняет файл', 'Объявляет переменную'],
+    ans: 1,
+    expl: 'print() выводит переданные аргументы в стандартный поток вывода (консоль).'
+  },
+  {
+    q: 'Что такое переменная в программировании?',
+    opts: ['Постоянная величина', 'Именованная область памяти для хранения значения', 'Тип данных', 'Функция'],
+    ans: 1,
+    expl: 'Переменная — это именованная область памяти, которой можно присваивать различные значения.'
+  },
+  {
+    q: 'Как в Python обозначается однострочный комментарий?',
+    opts: ['// комментарий', '/* комментарий */', '# комментарий', '-- комментарий'],
+    ans: 2,
+    expl: 'В Python однострочные комментарии начинаются с символа #.'
+  },
+  {
+    q: 'Что такое компилятор?',
+    opts: ['Редактор кода', 'Программа, переводящая код в машинный язык целиком', 'Отладчик', 'Интерпретатор строк'],
+    ans: 1,
+    expl: 'Компилятор переводит весь исходный код программы в машинный код сразу, до запуска.'
+  },
+  {
+    q: 'Чем интерпретатор отличается от компилятора?',
+    opts: ['Ничем', 'Интерпретатор выполняет код строка за строкой', 'Интерпретатор работает только с числами', 'Интерпретатор создаёт exe-файл'],
+    ans: 1,
+    expl: 'Интерпретатор читает и выполняет программу построчно, не создавая отдельного исполняемого файла.'
+  },
+  {
+    q: 'Что означает термин "синтаксис" в программировании?',
+    opts: ['Скорость выполнения программы', 'Набор правил написания кода на языке', 'Тип переменной', 'Алгоритм сортировки'],
+    ans: 1,
+    expl: 'Синтаксис — это набор правил, которым должен следовать код, чтобы быть понятным интерпретатору/компилятору.'
+  },
+  {
+    q: 'Что такое функция в программировании?',
+    opts: ['Переменная с числовым значением', 'Именованный блок кода, который можно вызвать многократно', 'Условный оператор', 'Импортированный модуль'],
+    ans: 1,
+    expl: 'Функция — именованный блок кода, принимающий аргументы и возвращающий результат; позволяет избежать повторения кода.'
+  },
+  {
+    q: 'Какой результат вернёт выражение 7 // 2 в Python?',
+    opts: ['3.5', '4', '3', '2'],
+    ans: 2,
+    expl: '// — оператор целочисленного деления (деление нацело). 7 // 2 = 3, остаток отбрасывается.'
+  },
+  {
+    q: 'Что такое булев тип данных (bool)?',
+    opts: ['Целое число', 'Тип с двумя значениями: True и False', 'Строка из одного символа', 'Список из нулей и единиц'],
+    ans: 1,
+    expl: 'bool — логический тип данных, принимающий только два значения: True (истина) или False (ложь).'
+  },
+  {
+    q: 'Что произойдёт при делении на ноль в Python?',
+    opts: ['Результат будет 0', 'Программа вернёт бесконечность', 'Возникнет исключение ZeroDivisionError', 'Вернётся None'],
+    ans: 2,
+    expl: 'Python вызывает исключение ZeroDivisionError при попытке разделить любое число на ноль.'
+  },
+  {
+    q: 'Для чего используется цикл for в Python?',
+    opts: ['Для объявления функций', 'Для перебора элементов последовательности', 'Для импорта модулей', 'Для обработки ошибок'],
+    ans: 1,
+    expl: 'Цикл for перебирает элементы итерируемого объекта (строки, списка, диапазона и т.д.) один за другим.'
+  },
+  {
+    q: 'Что возвращает функция len("Python")?',
+    opts: ['5', '6', '7', 'TypeError'],
+    ans: 1,
+    expl: 'len() возвращает количество символов в строке. В слове "Python" ровно 6 символов.'
+  },
+  {
+    q: 'Что такое IDE?',
+    opts: ['Тип данных', 'Интегрированная среда разработки', 'Алгоритм шифрования', 'Формат файла Python'],
+    ans: 1,
+    expl: 'IDE (Integrated Development Environment) — программа-оболочка для написания, запуска и отладки кода.'
+  },
+];
+
+(function initSplash() {
+  const q = splashQuestions[Math.floor(Math.random() * splashQuestions.length)];
+  document.getElementById('splash-q').textContent = q.q;
+  const opts = document.getElementById('splash-opts');
+  const letters = ['A', 'B', 'C', 'D'];
+  let answered = false;
+
+  q.opts.forEach((text, i) => {
+    const btn = document.createElement('div');
+    btn.className = 'splash-opt';
+    btn.innerHTML = `<span class="splash-letter">${letters[i]}</span>${text}`;
+    btn.addEventListener('click', () => {
+      if (answered) return;
+      answered = true;
+      opts.querySelectorAll('.splash-opt').forEach(o => o.style.pointerEvents = 'none');
+      if (i === q.ans) {
+        btn.classList.add('correct');
+      } else {
+        btn.classList.add('wrong');
+        opts.querySelectorAll('.splash-opt')[q.ans].classList.add('correct');
+      }
+      const expl = document.getElementById('splash-expl');
+      expl.textContent = q.expl;
+      expl.style.display = 'block';
+      const enter = document.getElementById('splash-enter');
+      enter.classList.add('visible');
+    });
+    opts.appendChild(btn);
+  });
+
+  function hideSplash() {
+    const s = document.getElementById('splash');
+    s.classList.add('hiding');
+    setTimeout(() => s.remove(), 500);
+  }
+  document.getElementById('splash-skip').addEventListener('click', hideSplash);
+  document.getElementById('splash-enter').addEventListener('click', hideSplash);
+})();
+
+// ═══ SCROLL PROGRESS ═══
+window.addEventListener('scroll', () => {
+  const d = document.documentElement;
+  const pct = (d.scrollTop / (d.scrollHeight - d.clientHeight)) * 100;
+  document.getElementById('progFill').style.width = pct + '%';
+});
+
+// ═══ THEME ═══
+let dark = false;
+document.getElementById('themeBtn').addEventListener('click', () => {
+  dark = !dark;
+  document.body.classList.toggle('dark', dark);
+  document.getElementById('themeBtn').textContent = dark ? '🌙' : '☀️';
+});
+
+// ═══ SCROLL SPY — подсвечивает пункт сайдбара при прокрутке ═══
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('.sidebar-link[href]');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      navLinks.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + e.target.id));
+    }
+  });
+}, { rootMargin: '-30% 0px -60% 0px' });
+sections.forEach(s => observer.observe(s));
+
+// ═══ TABS ═══
+document.querySelectorAll('.tabs').forEach(tabs => {
+  tabs.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.tab;
+      tabs.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b === btn));
+      const parent = btn.closest('.card') || btn.closest('section');
+      parent.querySelectorAll('.tab-pane').forEach(p => p.classList.toggle('active', p.id === id));
+    });
+  });
+});
+
+// ═══ HELPER ═══
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function pySlice(s, start, stop, step) {
+  step = step === undefined ? 1 : step;
+  if (step === 0) return '';
+  const len = s.length;
+  let indices = [];
+  if (step > 0) {
+    let st = start === undefined ? 0 : (start < 0 ? Math.max(0, len+start) : start);
+    let en = stop  === undefined ? len : (stop < 0 ? len+stop : Math.min(stop, len));
+    for (let i = st; i < en; i += step) indices.push(i);
+  } else {
+    let st = start === undefined ? len-1 : (start < 0 ? len+start : Math.min(start, len-1));
+    let en = stop  === undefined ? -1 : (stop < 0 ? len+stop : stop);
+    for (let i = st; i > en; i += step) indices.push(i);
+  }
+  return indices.map(i => s[i] || '').join('');
+}
+
+// ═══ BASICS ═══
+document.getElementById('btnConcat').addEventListener('click', () => {
+  const a = document.getElementById('str1').value;
+  const b = document.getElementById('str2').value;
+  document.getElementById('concat-out').innerHTML =
+    `<span style="color:#888"># конкатенация</span>\n"${esc(a)}" + "${esc(b)}" = <span class="hi">"${esc(a+b)}"</span>  длина: ${(a+b).length}`;
+});
+document.getElementById('btnRepeat').addEventListener('click', () => {
+  const a = document.getElementById('str1').value;
+  document.getElementById('concat-out').innerHTML =
+    `<span style="color:#888"># повтор × 3</span>\n"${esc(a)}" * 3 = <span class="hi">"${esc(a.repeat(3))}"</span>`;
+});
+
+document.getElementById('btnLen').addEventListener('click', () => {
+  const s = document.getElementById('len-str').value;
+  const sub = document.getElementById('in-sub').value;
+  const has = s.includes(sub);
+  document.getElementById('len-out').innerHTML =
+    `len("${esc(s)}") = <span class="hi">${s.length}</span>\n` +
+    `"${esc(sub)}" in s = <span style="color:${has?'#7ec89a':'#e07878'}">${has?'True':'False'}</span>`;
+});
+
+document.getElementById('btnEscape').addEventListener('click', () => {
+  const raw = document.getElementById('escape-in').value;
+  const p = raw.replace(/\\n/g,'\n').replace(/\\t/g,'\t').replace(/\\r/g,'\r');
+  document.getElementById('escape-out').innerHTML =
+    `<span style="color:#888"># обработанный текст:</span>\n<span class="hi">${esc(p)}</span>`;
+});
+
+// ═══ SLICING ═══
+function updateSlice() {
+  const str  = document.getElementById('slice-input').value;
+  const sv   = document.getElementById('start').value;
+  const stpv = document.getElementById('stop').value;
+  const stev = document.getElementById('step').value;
+  const start = sv === '' ? 0 : parseInt(sv);
+  const stop  = stpv === '' ? str.length : parseInt(stpv);
+  const step  = stev === '' || parseInt(stev) === 0 ? 1 : parseInt(stev);
+
+  const boxes = document.getElementById('slice-boxes');
+  boxes.innerHTML = '';
+  str.split('').forEach((ch, i) => {
+    const b = document.createElement('div');
+    b.className = 'char-box';
+    b.textContent = ch;
+    b.dataset.idx = i;
+    boxes.appendChild(b);
+  });
+
+  let indices = [];
+  if (step > 0) {
+    const s = start < 0 ? Math.max(0, str.length+start) : start;
+    const e = stop  < 0 ? str.length+stop : stop;
+    for (let i = s; i < e && i < str.length; i += step) indices.push(i);
+  } else {
+    const s = start < 0 ? Math.max(0, str.length+start) : Math.min(start, str.length-1);
+    const e = stop  < 0 ? str.length+stop : (stop < 0 ? -1 : stop);
+    for (let i = s; i > e && i >= 0; i += step) indices.push(i);
+  }
+  boxes.querySelectorAll('.char-box').forEach((b, i) => b.classList.toggle('selected', indices.includes(i)));
+  const res = indices.map(i => str[i]||'').join('');
+  document.getElementById('slice-out').innerHTML =
+    `s[${sv}:${stpv}:${step}] = <span class="hi">"${esc(res)}"</span>  <span style="color:#666">← ${res.length} символов</span>`;
+}
+document.getElementById('btnSlice').addEventListener('click', updateSlice);
+document.getElementById('slice-input').addEventListener('input', updateSlice);
+['start','stop','step'].forEach(id => document.getElementById(id).addEventListener('input', updateSlice));
+
+// Slice trainer
+const sliceTasks = [
+  { s:'Python', task:'Получи "Pyt" (первые 3 символа)', answer:['s[:3]','s[0:3]','s[0:3:1]'] },
+  { s:'Python', task:'Переверни строку → "nohtyP"', answer:['s[::-1]'] },
+  { s:'abcdefgh', task:'Каждый второй символ → "aceg"', answer:['s[::2]','s[0::2]','s[0:8:2]'] },
+  { s:'Hello!', task:'Убери последний символ → "Hello"', answer:['s[:-1]','s[0:-1]','s[0:5]','s[:5]'] },
+  { s:'Python', task:'Начиная с 3-го символа → "thon"', answer:['s[2:]','s[2:6]','s[2:6:1]'] },
+  { s:'abcdef', task:'Последние 3 символа → "def"', answer:['s[-3:]','s[3:]','s[3:6]'] },
+];
+let stIdx = 0;
+function showSliceTask() {
+  const t = sliceTasks[stIdx];
+  document.getElementById('slice-task-text').innerHTML =
+    `s = <ic>"${t.s}"</ic> — ${t.task}`;
+  document.getElementById('slice-answer').value = '';
+  document.getElementById('slice-task-out').textContent = 'Введи выражение вида  s[start:stop:step]';
+  document.getElementById('slice-task-out').className = 'output';
+}
+document.getElementById('btnSliceCheck').addEventListener('click', () => {
+  const t = sliceTasks[stIdx];
+  const ans = document.getElementById('slice-answer').value.trim().replace(/\s/g,'');
+  const ok = t.answer.includes(ans);
+  let actual = '';
+  try {
+    const m = ans.match(/s\[(-?\d*):(-?\d*):?(-?\d*)\]/);
+    if (m) {
+      actual = pySlice(t.s,
+        m[1]===''?undefined:parseInt(m[1]),
+        m[2]===''?undefined:parseInt(m[2]),
+        m[3]===''?1:parseInt(m[3]));
+    }
+  } catch(e){}
+  const out = document.getElementById('slice-task-out');
+  if (ok) {
+    out.innerHTML = `✅  Верно!  ${ans}  →  "${esc(actual)}"`;
+    out.className = 'output ok';
+  } else {
+    out.innerHTML = `❌  Не совсем. Твой результат: "${esc(actual||'?')}"`;
+    out.className = 'output err';
+  }
+});
+document.getElementById('btnSliceSkip').addEventListener('click', () => { stIdx = (stIdx+1)%sliceTasks.length; showSliceTask(); });
+
+// ═══ METHODS ═══
+const methodDefs = [
+  { key:'upper',      label:'.upper()',      desc:'→ ВЕРХНИЙ регистр',         fn:s=>s.toUpperCase() },
+  { key:'lower',      label:'.lower()',      desc:'→ нижний регистр',          fn:s=>s.toLowerCase() },
+  { key:'strip',      label:'.strip()',      desc:'убрать пробелы с краёв',    fn:s=>s.trim() },
+  { key:'lstrip',     label:'.lstrip()',     desc:'убрать пробелы слева',      fn:s=>s.trimStart() },
+  { key:'rstrip',     label:'.rstrip()',     desc:'убрать пробелы справа',     fn:s=>s.trimEnd() },
+  { key:'title',      label:'.title()',      desc:'Каждое Слово С Заглавной',  fn:s=>s.replace(/\w\S*/g,t=>t[0].toUpperCase()+t.slice(1).toLowerCase()) },
+  { key:'capitalize', label:'.capitalize()', desc:'Первая буква заглавная',    fn:s=>s.trim()[0].toUpperCase()+s.trim().slice(1).toLowerCase() },
+  { key:'split',      label:'.split()',      desc:'разбить на список',         fn:s=>JSON.stringify(s.trim().split(/\s+/)) },
+  { key:'replace',    label:".replace('o','0')", desc:'замена символов',       fn:s=>s.replace(/o/g,'0') },
+  { key:'find',       label:".find('Python')",   desc:'индекс вхождения',      fn:s=>String(s.indexOf('Python')) },
+  { key:'count',      label:".count('o')",       desc:'кол-во вхождений "o"',  fn:s=>String((s.match(/o/g)||[]).length) },
+  { key:'startswith', label:".startswith('H')",  desc:'начинается с "H"?',     fn:s=>s.trimStart().startsWith('H')?'True':'False' },
+  { key:'endswith',   label:".endswith('!')",    desc:'заканчивается на "!"?', fn:s=>s.trimEnd().endsWith('!')?'True':'False' },
+  { key:'isdigit',    label:'.isdigit()',     desc:'все символы цифры?',       fn:s=>/^\d+$/.test(s.trim())?'True':'False' },
+  { key:'join',       label:".join(words)",   desc:'объединить список',        fn:s=>s.trim().split(/\s+/).join('-') },
+  { key:'center',     label:'.center(20)',    desc:'центрировать в 20 симв.',  fn:s=>s.trim().padStart(Math.ceil((20+s.trim().length)/2),' ').padEnd(20,' ') },
+];
+const mCodeMap = {
+  upper:      s=>`s = "${s}"\nprint(s.upper())  # → "${s.toUpperCase()}"`,
+  lower:      s=>`s = "${s}"\nprint(s.lower())  # → "${s.toLowerCase()}"`,
+  strip:      s=>`s = "${s}"\nprint(s.strip())  # → "${s.trim()}"`,
+  lstrip:     s=>`s = "${s}"\nprint(s.lstrip()) # → "${s.trimStart()}"`,
+  rstrip:     s=>`s = "${s}"\nprint(s.rstrip()) # → "${s.trimEnd()}"`,
+  title:      s=>`s = "${s}"\nprint(s.title())  # → "${s.replace(/\w\S*/g,t=>t[0].toUpperCase()+t.slice(1).toLowerCase())}"`,
+  capitalize: s=>`s = "${s}"\nprint(s.capitalize())`,
+  split:      s=>`s = "${s.trim()}"\nprint(s.split())   # → список слов`,
+  replace:    s=>`s = "${s}"\nprint(s.replace('o', '0'))  # → "${s.replace(/o/g,'0')}"`,
+  find:       s=>`s = "${s}"\nprint(s.find('Python'))  # → ${s.indexOf('Python')}`,
+  count:      s=>`s = "${s}"\nprint(s.count('o'))  # → ${(s.match(/o/g)||[]).length}`,
+  startswith: s=>`s = "${s}"\nprint(s.startswith('H'))  # → ${s.trimStart().startsWith('H')}`,
+  endswith:   s=>`s = "${s}"\nprint(s.endswith('!'))  # → ${s.trimEnd().endsWith('!')}`,
+  isdigit:    s=>`s = "${s}"\nprint(s.isdigit())  # → ${/^\d+$/.test(s.trim())}`,
+  join:       s=>`words = ${JSON.stringify(s.trim().split(/\s+/))}\nprint('-'.join(words))  # → "${s.trim().split(/\s+/).join('-')}"`,
+  center:     s=>`s = "${s.trim()}"\nprint(s.center(20))  # 20 символов`,
+};
+
+let activeMethod = 'upper';
+const grid = document.getElementById('methodGrid');
+methodDefs.forEach(m => {
+  const el = document.createElement('div');
+  el.className = 'method-chip' + (m.key==='upper'?' active':'');
+  el.innerHTML = `<div class="mn">${m.label}</div><div class="md">${m.desc}</div>`;
+  el.addEventListener('click', () => {
+    document.querySelectorAll('.method-chip').forEach(c=>c.classList.remove('active'));
+    el.classList.add('active');
+    activeMethod = m.key;
+    applyMethod();
+  });
+  grid.appendChild(el);
+});
+function applyMethod() {
+  const s = document.getElementById('method-input').value;
+  const m = methodDefs.find(x=>x.key===activeMethod);
+  if (!m) return;
+  const res = m.fn(s);
+  document.getElementById('before-method').textContent = s;
+  document.getElementById('after-method').textContent = res;
+  document.getElementById('method-hint').textContent = '→ ' + m.desc;
+  const fn = mCodeMap[m.key];
+  document.getElementById('method-code').textContent = fn ? fn(s) : `s.${m.key}()`;
+  document.getElementById('method-fname').textContent = m.key + '.py';
+}
+document.getElementById('method-input').addEventListener('input', applyMethod);
+
+// Cheatsheet
+const csData = [
+  ['.upper()','.lower()','.strip()'],
+  ['.split()','.join()','.replace(a,b)'],
+  ['.find(s)','.count(s)','.startswith()'],
+  ['.endswith()','.isdigit()','.title()'],
+];
+const desc2 = {
+  '.upper()':'ВЕРХНИЙ регистр','.lower()':'нижний регистр','.strip()':'убрать пробелы по краям',
+  '.split()':'→ список слов','.join()':'объединить список','.replace(a,b)':'замена подстроки',
+  '.find(s)':'индекс вхождения (-1 если нет)','.count(s)':'кол-во вхождений','.startswith()':'начинается с?',
+  '.endswith()':'заканчивается на?','.isdigit()':'все цифры?','.title()':'Каждое Слово С Заглавной',
+};
+const ex2 = {
+  '.upper()':'"hi".upper() → "HI"','.lower()':'"HI".lower() → "hi"','.strip()':'"  hi  ".strip() → "hi"',
+  '.split()':'"a b c".split() → [\'a\',\'b\',\'c\']','.join()':'"-".join([\'a\',\'b\']) → "a-b"','.replace(a,b)':'"cat".replace("c","b") → "bat"',
+  '.find(s)':'"abc".find("b") → 1','.count(s)':'"aabaa".count("a") → 4','.startswith()':'"Hello".startswith("He") → True',
+  '.endswith()':'"file.py".endswith(".py") → True','.isdigit()':'"123".isdigit() → True','.title()':'"hello world".title() → "Hello World"',
+};
+const tbody = document.getElementById('cs-tbody');
+[...csData.flat()].forEach(m => {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td><ic>${m}</ic></td><td>${desc2[m]||''}</td><td style="font-family:'Fira Code',monospace;font-size:.78rem;">${esc(ex2[m]||'')}</td>`;
+  tbody.appendChild(tr);
+});
+
+// Chain
+document.getElementById('btnChain').addEventListener('click', () => {
+  let s = document.getElementById('chain-input').value;
+  const m1=document.getElementById('chain-m1').value;
+  const m2=document.getElementById('chain-m2').value;
+  const m3=document.getElementById('chain-m3').value;
+  const steps=[m1,m2,m3].filter(Boolean);
+  const applyM = (str,m) => {
+    if(m==='strip') return str.trim();
+    if(m==='lower') return str.toLowerCase();
+    if(m==='upper') return str.toUpperCase();
+    if(m==='title') return str.replace(/\w\S*/g,t=>t[0].toUpperCase()+t.slice(1).toLowerCase());
+    if(m==='capitalize') return str.trim()[0].toUpperCase()+str.trim().slice(1).toLowerCase();
+    return str;
+  };
+  let chain='s';
+  steps.forEach(m => { s=applyM(s,m); chain+=`.${m}()`; });
+  document.getElementById('chain-out').innerHTML =
+    `${chain}\n→ <span class="hi">"${esc(s)}"</span>`;
+});
+
+// ═══ FORMATTING ═══
+function updateF() {
+  const n=document.getElementById('f-name').value||'...';
+  const a=document.getElementById('f-age').value||'...';
+  const c=document.getElementById('f-course').value||'...';
+  const g=parseFloat(document.getElementById('f-gpa').value)||0;
+  document.getElementById('f-output').innerHTML =
+    `f"Студент {${n}}, возраст: {${a}}, курс: {${c}}, балл: {${g}:.1f}"\n→ <span class="hi">"Студент ${esc(n)}, возраст: ${esc(a)}, курс: ${esc(c)}, балл: ${g.toFixed(1)}"</span>`;
+}
+['f-name','f-age','f-course','f-gpa'].forEach(id=>document.getElementById(id).addEventListener('input',updateF));
+
+document.getElementById('btnFmtNum').addEventListener('click', () => {
+  const n = parseFloat(document.getElementById('fmt-num').value);
+  const sp = document.getElementById('fmt-spec').value;
+  let res;
+  if(sp==='.2f') res=n.toFixed(2);
+  else if(sp==='.0f') res=n.toFixed(0);
+  else if(sp==='.4f') res=n.toFixed(4);
+  else if(sp==='e') res=n.toExponential(2);
+  else if(sp==='%') res=(n*100).toFixed(2)+'%';
+  else res=String(n);
+  document.getElementById('fmt-num-out').innerHTML =
+    `f"{${n}:${sp}}" = <span class="hi">"${esc(res)}"</span>`;
+});
+
+// ═══ UNICODE ═══
+const ag = document.getElementById('asciiGrid');
+const codes = [
+  ...Array.from({length:10},(_,i)=>48+i),
+  ...Array.from({length:26},(_,i)=>65+i),
+  ...Array.from({length:26},(_,i)=>97+i),
+  33,34,35,36,37,38,40,41,42,43,44,45,46,47,58,59,60,61,62,63,64,
+];
+codes.forEach(c => {
+  const ch = String.fromCharCode(c);
+  const el = document.createElement('div');
+  el.className = 'ascii-cell';
+  el.title = `ord('${ch}') = ${c}`;
+  el.innerHTML = `<span class="ascii-char">${ch}</span><span class="ascii-dec">${c}</span><span class="ascii-hex">0x${c.toString(16).toUpperCase()}</span>`;
+  ag.appendChild(el);
+});
+
+document.getElementById('btnOrd').addEventListener('click', () => {
+  const s = document.getElementById('ord-input').value;
+  if (!s) return;
+  const c = s.codePointAt(0);
+  document.getElementById('ord-out').innerHTML =
+    `ord("${esc(s[0])}") = <span class="hi">${c}</span>\nhex: 0x${c.toString(16).toUpperCase()}   bin: ${c.toString(2)}`;
+});
+document.getElementById('btnChr').addEventListener('click', () => {
+  const n = parseInt(document.getElementById('chr-input').value);
+  if (isNaN(n)) return;
+  const ch = String.fromCodePoint(n);
+  document.getElementById('chr-out').innerHTML =
+    `chr(${n}) = <span class="hi">"${esc(ch)}"</span>\nU+${n.toString(16).toUpperCase().padStart(4,'0')}`;
+});
+
+document.getElementById('btnCaesar').addEventListener('click', () => {
+  const text  = document.getElementById('caesar-text').value;
+  const shift = parseInt(document.getElementById('caesar-shift').value)||3;
+  const enc = Array.from(text).map(c=>String.fromCodePoint(c.codePointAt(0)+shift)).join('');
+  const dec = Array.from(enc).map(c=>String.fromCodePoint(c.codePointAt(0)-shift)).join('');
+  document.getElementById('caesar-out').innerHTML =
+    `Исходно:  "${esc(text)}"\nЗашифр.:  <span class="hi">"${esc(enc)}"</span>  (+${shift})\nОбратно:  <span class="ok">"${esc(dec)}"</span>`;
+});
+
+// ═══ GAME ═══
+const gameWords = [
+  {word:'STRING',   hint:'Тип данных для текста в Python'},
+  {word:'SLICE',    hint:'s[start:stop:step] — это ...'},
+  {word:'INDEX',    hint:'Позиция символа в строке'},
+  {word:'METHOD',   hint:'.upper(), .lower() — это методы ...'},
+  {word:'FORMAT',   hint:'f"Hello, {name}!" — это f-...'},
+  {word:'UNICODE',  hint:'Международная кодировка символов'},
+  {word:'IMMUTABLE',hint:'Строки нельзя изменить, они — ...'},
+  {word:'STRIP',    hint:'Метод удаления пробелов с краёв'},
+  {word:'SPLIT',    hint:'Метод разбивки строки на список'},
+  {word:'JOIN',     hint:'Метод объединения списка в строку'},
+  {word:'REPLACE',  hint:'Метод замены подстроки'},
+  {word:'ENCODE',   hint:'Перевод строки в байты'},
+  {word:'PYTHON',   hint:'Язык программирования 🐍'},
+  {word:'CONCAT',   hint:'Объединение строк оператором +'},
+  {word:'ESCAPE',   hint:'\\n, \\t, \\\\ — ... символы'},
+];
+const wl = document.getElementById('wordList');
+gameWords.forEach(w => {
+  const el = document.createElement('span');
+  el.style.cssText = 'font-family:Fira Code,monospace;font-size:.78rem;background:var(--paper2);border:1px solid var(--border);padding:.2rem .6rem;border-radius:3px;color:var(--amber2);';
+  el.textContent = w.word.toLowerCase();
+  wl.appendChild(el);
+});
+
+let gState = {word:'',hint:'',guessed:new Set(),lives:5,score:0,idx:0};
+let gWords = [...gameWords].sort(()=>Math.random()-.5);
+
+function startGame(i) {
+  const e = gWords[i % gWords.length];
+  gState.word = e.word.toUpperCase();
+  gState.hint = e.hint;
+  gState.guessed = new Set();
+  gState.lives = 5;
+  document.getElementById('gameArea').style.display = 'block';
+  document.getElementById('gameMsg').style.display  = 'none';
+  renderGame();
+}
+function renderGame() {
+  const {word,guessed,lives} = gState;
+  document.getElementById('gameHint').textContent = '💡 ' + gState.hint;
+  document.getElementById('gameWord').textContent = word.split('').map(c=>guessed.has(c)?c:'_').join(' ');
+  document.getElementById('gameLives').textContent = '❤️'.repeat(lives) + '🖤'.repeat(5-lives);
+  const gl = document.getElementById('letterGrid');
+  gl.innerHTML = '';
+  'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').forEach(lt => {
+    const btn = document.createElement('button');
+    btn.className = 'letter-btn';
+    btn.textContent = lt;
+    if (guessed.has(lt)) { btn.disabled=true; btn.classList.add(word.includes(lt)?'hit':'miss'); }
+    btn.addEventListener('click', () => {
+      if (gState.guessed.has(lt)) return;
+      gState.guessed.add(lt);
+      if (!gState.word.includes(lt)) gState.lives--;
+      renderGame();
+      const won = gState.word.split('').every(c=>gState.guessed.has(c));
+      if (won) { gState.score += gState.lives*10; document.getElementById('gameScore').textContent=gState.score; endGame(true); }
+      else if (gState.lives<=0) endGame(false);
+    });
+    gl.appendChild(btn);
+  });
+}
+function endGame(won) {
+  document.getElementById('gameArea').style.display='none';
+  document.getElementById('gameMsg').style.display='block';
+  document.getElementById('gameMsgIcon').textContent = won?'🎉':'😅';
+  document.getElementById('gameMsgText').textContent = won?'Угадал!':'Не угадал...';
+  document.getElementById('gameMsgSub').textContent  = won
+    ? `Слово: "${gState.word.toLowerCase()}" — +${gState.lives*10} очков!`
+    : `Слово было: "${gState.word.toLowerCase()}"`;
+}
+document.getElementById('btnNextWord').addEventListener('click',()=>{ gState.idx++; startGame(gState.idx); });
+document.getElementById('btnSkipGame').addEventListener('click',()=>{ gState.idx++; startGame(gState.idx); });
+
+// ═══ QUIZ ═══
+const questions = [
+  {q:'Как создать пустую строку?', opts:["s = ''","s = []","s = ()","s = 0"], ans:0, expl:"'' или \"\" создают пустую строку без символов."},
+  {q:'Что вернёт "Python"[2]?', opts:["'y'","'t'","'P'","IndexError"], ans:1, expl:"Индексация с 0: P(0) y(1) t(2)..."},
+  {q:'Какой метод убирает пробелы по краям?', opts:[".clean()",".strip()",".trim()",".cut()"], ans:1, expl:".strip() убирает пробелы, \\n и \\t с обоих краёв."},
+  {q:'Можно ли изменить символ: s[0] = "A"?', opts:["Да","Только если len > 1","Нет, строки неизменяемы","Через .mutate()"], ans:2, expl:"str — immutable. s[0]='A' вызовет TypeError."},
+  {q:'Что вернёт "abc" * 3?', opts:["'abcabcabc'","'abc3'","['abc','abc','abc']","TypeError"], ans:0, expl:"* повторяет строку нужное число раз."},
+  {q:'Что делает s[::-1]?', opts:["Удаляет последний символ","Разворачивает строку","Каждый второй символ","Ошибка"], ans:1, expl:"step=-1 обходит с конца — строка переворачивается."},
+  {q:'Что вернёт "hello".find("z")?', opts:["0","-1","None","ValueError"], ans:1, expl:".find() возвращает -1 если подстрока не найдена."},
+  {q:'Срез s[1:4] для s="Python" даст:', opts:["'yth'","'Pyt'","'Pyth'","'ytho'"], ans:0, expl:"Включает индекс 1 (y), исключает 4 (o). Итог: yth."},
+  {q:'Что делает ".".join(["a","b","c"])?', opts:["['a','b','c']","'a.b.c'","'a b c'","TypeError"], ans:1, expl:".join() объединяет список в строку, вставляя разделитель."},
+  {q:'Рекомендуемый способ форматирования в Python 3.6+:', opts:['% оператор','.format()','f-строки','template()'], ans:2, expl:"f-строки — самый читаемый и быстрый способ."},
+  {q:'Что вернёт len("Привет")?', opts:["5","6","12","7"], ans:1, expl:"В слове 'Привет' 6 символов Unicode."},
+  {q:'Чему равно ord("A")?', opts:["64","65","97","41"], ans:1, expl:"ord() возвращает код Unicode. 'A' = 65."},
+  {q:'Как получить символ по коду 65?', opts:["str(65)","char(65)","chr(65)","decode(65)"], ans:2, expl:"chr() преобразует число в символ. chr(65) → 'A'."},
+  {q:'Что вернёт "Python"[-1]?', opts:["'P'","'n'","IndexError","''"], ans:1, expl:"-1 означает последний символ. 'Python'[-1] = 'n'."},
+  {q:'Результат "  hi  ".strip().upper()?', opts:["'  HI  '","'HI'","'hi'","Ошибка"], ans:1, expl:"strip() убирает пробелы → 'hi', upper() → 'HI'."},
+];
+
+let cQ=0, qScore=0, qAnswered=false;
+document.getElementById('q-total').textContent = questions.length;
+
+function renderQuiz() {
+  const con  = document.getElementById('quiz-container');
+  const nBtn = document.getElementById('next-q');
+  const res  = document.getElementById('quiz-result');
+  con.innerHTML=''; nBtn.style.display='none'; res.style.display='none';
+  qAnswered=false;
+  if (cQ >= questions.length) { showResult(); return; }
+  const q = questions[cQ];
+  document.getElementById('q-num').textContent = cQ+1;
+  document.getElementById('q-score').textContent = qScore;
+  document.getElementById('quiz-progress').style.width = `${(cQ/questions.length)*100}%`;
+  const letters = ['A','B','C','D'];
+  let html = `<p style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;margin-bottom:1rem;line-height:1.5;">${q.q}</p>`;
+  q.opts.forEach((o,i) => {
+    html += `<div class="quiz-opt" data-i="${i}"><span class="opt-letter">${letters[i]}</span>${esc(o)}</div>`;
+  });
+  html += `<div class="expl-box" id="expl-box"></div>`;
+  con.innerHTML = html;
+  con.querySelectorAll('.quiz-opt').forEach(el => {
+    el.addEventListener('click', () => {
+      if (qAnswered) return;
+      qAnswered = true;
+      const i = parseInt(el.dataset.i);
+      con.querySelectorAll('.quiz-opt').forEach(o=>o.style.pointerEvents='none');
+      if (i===q.ans) { qScore++; el.classList.add('correct'); document.getElementById('q-score').textContent=qScore; }
+      else { el.classList.add('wrong'); con.querySelectorAll('.quiz-opt')[q.ans].classList.add('correct'); }
+      const expl = document.getElementById('expl-box');
+      expl.style.display='block'; expl.textContent = '→ ' + q.expl;
+      nBtn.style.display='block';
+    });
+  });
+}
+document.getElementById('next-q').addEventListener('click', ()=>{ cQ++; renderQuiz(); });
+document.getElementById('btnRestart').addEventListener('click', ()=>{ cQ=0; qScore=0; document.getElementById('q-score').textContent=0; renderQuiz(); });
+
+function showResult() {
+  document.getElementById('quiz-container').innerHTML='';
+  document.getElementById('next-q').style.display='none';
+  document.getElementById('quiz-result').style.display='block';
+  document.getElementById('quiz-progress').style.width='100%';
+  document.getElementById('score').textContent = qScore;
+  const p = qScore/questions.length;
+  document.getElementById('result-emoji').textContent = p>=.93?'🔥':p>=.7?'🎉':p>=.5?'👍':'📚';
+  document.getElementById('score-msg').textContent = p>=.93?'Великолепно! Ты эксперт!':p>=.7?'Отличный результат!':p>=.5?'Неплохо, но есть куда расти.':'Повтори материал!';
+  setTimeout(()=>{ document.getElementById('score-bar').style.width=`${p*100}%`; }, 100);
+}
+
+// ═══ ITERATION ═══
+document.getElementById('btnIter').addEventListener('click', () => {
+  const s = document.getElementById('iter-str').value;
+  if (!s) return;
+  const lines = Array.from(s).map((ch, i) => `[${i}]  '${esc(ch)}'   ord=${ch.codePointAt(0)}`).join('\n');
+  document.getElementById('iter-out').innerHTML =
+    `<span style="color:var(--ink3)">for i, ch in enumerate("${esc(s)}"):</span>\n${lines}`;
+});
+
+// ═══ COMPARE ═══
+document.getElementById('btnCmp').addEventListener('click', () => {
+  const a = document.getElementById('cmp1').value;
+  const b = document.getElementById('cmp2').value;
+  const eq = a === b, lt = a < b, gt = a > b;
+  const col = v => `<span style="color:${v?'var(--amber)':'var(--rust)'}">${v?'True':'False'}</span>`;
+  document.getElementById('cmp-out').innerHTML =
+    `"${esc(a)}" == "${esc(b)}"  →  ${col(eq)}\n"${esc(a)}" &lt;  "${esc(b)}"  →  ${col(lt)}\n"${esc(a)}" &gt;  "${esc(b)}"  →  ${col(gt)}\n\n<span style="color:var(--ink3)">ord первых символов:  '${esc(a[0]||'')}' = ${a.codePointAt(0)||'—'},  '${esc(b[0]||'')}' = ${b.codePointAt(0)||'—'}</span>`;
+});
+
+// ═══ INIT ═══
+updateSlice();
+applyMethod();
+updateF();
+showSliceTask();
+startGame(0);
+renderQuiz();
+</script>
+</body>
+</html>
